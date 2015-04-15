@@ -8,6 +8,9 @@ import lxml.html as html
 import re 
 import os
 
+import requests
+
+from bs4 import BeautifulSoup
 import urllib2
 
 class scraper:
@@ -18,13 +21,12 @@ class scraper:
         self.html2string()
             
     def crawing(self):
-        response = urllib2.urlopen(self.link)
-        self.plain_html = response.read()
-#        wd = webdriver.Firefox()
-#        wd.get(self.link)   
-#        self.plain_html = wd.page_source
-#        
-#        wd.close()
+        response = requests.get(self.link)
+        if response.status_code != 200:
+            print "Not 200"
+            
+        self.plain_html = response.content
+
     
     def txtsave(self,name_of_the_file):
         text_file = open(name_of_the_file,'w')
