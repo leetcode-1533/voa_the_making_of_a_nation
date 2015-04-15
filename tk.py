@@ -44,7 +44,7 @@ class scraper:
         response = requests.get(self.ori_link)
         
         if response.status_code != 200:
-            print "Printing: Not 200"
+            print "Original: Not 200"
         html = response.content                  
         soup = BeautifulSoup(html)      
         
@@ -101,13 +101,39 @@ class scraper:
         mp3 = urllib2.urlopen(self.mp3_link)
         open(os.path.join(self.loc,self.title)+'.mp3','wb').write(mp3.read())
         
+class link_list:
 
+    def __init__(self):
+        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/2/979/979.html?tab=2'
+
+    def get_urllist(self):
+        response = requests.get(self.list_url)
+        
+        if response.status_code != 200:        
+            print "Listing: Not 200"       
+        html = response.content        
+        soup = BeautifulSoup(html)        
+        self.url_list = soup.findAll('a',{'class':' assignedIcon asIcoAudio'})        
+        
+        for item in self.url_list:        
+            print self.get_code(item)
+
+    def get_code(self,soupinstance):
+        
+        wholehtml_temp = soupinstance['href']
+        # print html     
+        html_temp = re.search(r'\d+.html',wholehtml_temp).group(0) 
+        html = re.sub(r'.html',"",html_temp)   
+        return html
 
         
 
 if __name__ == "__main__":
+    test2 = link_list()
+    test2.get_urllist()
+
+
     
-    ori_url = "http://learningenglish.voanews.com/content/americans-remember-lincoln-assassination-150-years/2717607.html"
-    test = scraper(ori_url)
+
 
 
