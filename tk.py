@@ -18,7 +18,9 @@ class scraper:
     def __init__(self,link):
         self.ori_link = link
         self.analyzer()
+        
         self.crawing()
+        self.mp3_download()
         
     def analyzer(self):
         
@@ -27,18 +29,30 @@ class scraper:
         print_patter = 'http://learningenglish.voanews.com/articleprintview/'  
         self.print_link = print_patter + print_code
         
-        print self.print_link
-        
+        # get mp3 url:        
         response = requests.get(self.ori_link)
         
         if response.status_code != 200:
             print "Printing: Not 200"
-        html = response.content   
-    
+        html = response.content  
+            
         
         soup = BeautifulSoup(html)
+        
+        mp3list = soup.find('li',{'class':'downloadlink'})
+        mp3list = mp3list.findAll('a',)
+        # mp3list:
+        # 0: MP3 - 128.0kb/s ~8.3MB
+        # 1: wav - 1.4Mb/s ~ 91.3MB
+        # 2: MP3 - 64.0kb/s ~4.1MB
+        
+        mp3_link = mp3list[0]
+        self.mp3_link = mp3_link['href']
+        
+        
+        print self.mp3_link
+        
             
-
     
     def txtsave(self,name_of_the_file):
         text_file = open(name_of_the_file,'w')
@@ -67,8 +81,7 @@ class scraper:
         self.article = article
         
     def mp3_download(self):
-        test = 'file:///Users/y1275963/Downloads/8ff36304-8862-4091-84d9-be0b9bca5281_hq.mp3'
-        mp3 = urllib2.urlopen(test)
+        mp3 = urllib2.urlopen(self.mp3_link)
         open('tk.mp3','wb').write(mp3.read())
         
 
@@ -79,6 +92,5 @@ if __name__ == "__main__":
     
     ori_url = "http://learningenglish.voanews.com/content/americans-remember-lincoln-assassination-150-years/2717607.html"
     test = scraper(ori_url)
-    test.txtsave('tk.txt')
 
 
