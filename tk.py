@@ -3,7 +3,6 @@
 Created on Wed Apr 15 19:48:11 2015
 """
 
-from selenium import webdriver
 from lxml.html.clean  import Cleaner
 import lxml.html as html
 import re 
@@ -26,7 +25,7 @@ class scraper:
 #        
 #        wd.close()
     
-    def string2txt(self,name_of_the_file):
+    def txtsave(self,name_of_the_file):
         text_file = open(name_of_the_file,'w')
         text_file.write(self.article)
         text_file.close()
@@ -38,19 +37,18 @@ class scraper:
         article = plain_html.text_content()
         remove_print = r'Print options   Print:     Include Comments (.*)    Include images'
         article = re.sub(remove_print,"",article,count=1)
-        remove_nextline = "\n                 \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\n"
+        remove_nextline = "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\t\r"
         article = article.replace(remove_nextline,"",1)
         
         article = article.encode('utf8')
         self.article = article
+
 
         
 
 if __name__ == "__main__":
     
     test = scraper("http://learningenglish.voanews.com/articleprintview/2717607.html")
-    
-    test.string2txt('tk.txt')
-
+    test.txtsave('tk.txt')
 
 
