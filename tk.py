@@ -16,16 +16,28 @@ import urllib2
 class scraper:
     
     def __init__(self,link):
-        self.link = link
+        self.ori_link = link
+        self.analyzer()
         self.crawing()
-        self.html2string()
-            
-    def crawing(self):
-        response = requests.get(self.link)
+        
+    def analyzer(self):
+        
+        # get print url:
+        print_code = re.findall(r'\d+.html',self.ori_link)[0]
+        print_patter = 'http://learningenglish.voanews.com/articleprintview/'  
+        self.print_link = print_patter + print_code
+        
+        print self.print_link
+        
+        response = requests.get(self.ori_link)
+        
         if response.status_code != 200:
-            print "Not 200"
+            print "Printing: Not 200"
+        html = response.content   
+    
+        
+        soup = BeautifulSoup(html)
             
-        self.plain_html = response.content
 
     
     def txtsave(self,name_of_the_file):
@@ -33,8 +45,13 @@ class scraper:
         text_file.write(self.article)
         text_file.close()
         
-    def html2string(self):
-        plain_html = html.document_fromstring(self.plain_html)
+    def crawing(self):
+        response = requests.get(self.print_link)
+        if response.status_code != 200:
+            print "Printing: Not 200"
+            
+        plain_html = html.document_fromstring(response.content)
+        
         Cleaner(kill_tags=['noscript'], style=True)(plain_html)
         
         article = plain_html.text_content()
@@ -60,7 +77,8 @@ class scraper:
 
 if __name__ == "__main__":
     
-    test = scraper("http://learningenglish.voanews.com/articleprintview/2711784.html")
+    ori_url = "http://learningenglish.voanews.com/content/americans-remember-lincoln-assassination-150-years/2717607.html"
+    test = scraper(ori_url)
     test.txtsave('tk.txt')
 
 
