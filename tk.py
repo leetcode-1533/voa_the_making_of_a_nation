@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Apr 15 19:48:11 2015
+
+To chech if it is right:
+
+    find . -maxdepth 1 -n *.txt
 """
 
 from lxml.html.clean  import Cleaner
@@ -21,7 +25,7 @@ class scraper:
         prefix = 'http://learningenglish.voanews.com'
 
         self.ori_link = prefix + link
-        
+                
         print self.ori_link
 
         self.analyzer()
@@ -34,7 +38,7 @@ class scraper:
         
         self.crawing()
         self.txtsave()
-        self.mp3_download()
+#        self.mp3_download()
         
     def analyzer(self):
         
@@ -43,7 +47,6 @@ class scraper:
         print_patter = 'http://learningenglish.voanews.com/articleprintview/'  
         self.print_link = print_patter + print_code
                 
-        
         # get mp3 url:        
         response = requests.get(self.ori_link)
         
@@ -51,15 +54,32 @@ class scraper:
             print "Original: Not 200"
         html = response.content                  
         soup = BeautifulSoup(html)      
-        
+      
+      
+        #class="downloadlink"
         mp3list = soup.find('li',{'class':'downloadlink'})
-        
+        #class="downloadlinkstatic"
         if mp3list == None:
             mp3list = soup.find('li',{'class':'downloadlinkstatic'})
-        
-        mp3list = mp3list.findAll('a',)
+        #
+        if mp3list == None:
+            temp_link = soup.find('a',{'class':'listenico'})
+            temp_html = temp_link['href']
+            
+            temp_prefix = 'http://learningenglish.voanews.com'
+            mp3_sub_url = temp_prefix + temp_html
+            
+            sub_response = requests.get(mp3_sub_url)
+            if sub_response.status_code != 200:
+                print "MP3 Sub page: Not 200"
+            sub_html = sub_response.content
+            mp3_soup = BeautifulSoup(sub_html)
+            mp3list = mp3_soup.find('li',{'class':'downloadlinkstatic'})
+                     
+            
+        mp3list = mp3list.findAll('a')
       
-        # mp3list:
+        # mp3list: Only works for the newest
         # 0: MP3 - 128.0kb/s ~8.3MB
         # 1: wav - 1.4Mb/s ~ 91.3MB
         # 2: MP3 - 64.0kb/s ~4.1MB
@@ -76,7 +96,6 @@ class scraper:
         date = date_temp.contents[0].strip()
         ##change the format:
         self.date = datetime.datetime.strptime(date,'%m/%d/%Y').strftime('%y-%m-%d')
-        print self.date
         
                   
     def txtsave(self):
@@ -113,7 +132,7 @@ class scraper:
 class link_list:
 
     def __init__(self):
-        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/1/979/979.html?tab=2'
+        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/2/979/979.html?tab=2'
 
     def get_urllist(self):
         response = requests.get(self.list_url)
