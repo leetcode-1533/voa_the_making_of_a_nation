@@ -18,6 +18,8 @@ import requests
 from bs4 import BeautifulSoup
 import urllib2
 
+tk = ''
+
 class scraper:
     
     def __init__(self,link):
@@ -41,7 +43,7 @@ class scraper:
 #        self.mp3_download()
         
     def analyzer(self):
-        
+        global tk
         # get print url:
         print_code = re.findall(r'\d+.html',self.ori_link)[0]
         print_patter = 'http://learningenglish.voanews.com/articleprintview/'  
@@ -61,31 +63,40 @@ class scraper:
         #class="downloadlinkstatic"
         if mp3list == None:
             mp3list = soup.find('li',{'class':'downloadlinkstatic'})
-        #
-        if mp3list == None:
-            temp_link = soup.find('a',{'class':'listenico'})
-            temp_html = temp_link['href']
-            
-            temp_prefix = 'http://learningenglish.voanews.com'
-            mp3_sub_url = temp_prefix + temp_html
-            
-            sub_response = requests.get(mp3_sub_url)
-            if sub_response.status_code != 200:
-                print "MP3 Sub page: Not 200"
-            sub_html = sub_response.content
-            mp3_soup = BeautifulSoup(sub_html)
-            mp3list = mp3_soup.find('li',{'class':'downloadlinkstatic'})
-                     
-            
-        mp3list = mp3list.findAll('a')
-      
-        # mp3list: Only works for the newest
-        # 0: MP3 - 128.0kb/s ~8.3MB
-        # 1: wav - 1.4Mb/s ~ 91.3MB
-        # 2: MP3 - 64.0kb/s ~4.1MB
         
-        mp3_link = mp3list[0]
-        self.mp3_link = mp3_link['href']
+        
+#        if mp3list == None:
+#            mp3_link = re.search(r'http.*.Mp3',html).group(0)
+        # Open a subpage:
+        if mp3list == None:
+            try:
+                temp_link = soup.find('a',{'class':'listenico'})
+                temp_html = temp_link['href']
+                
+                temp_prefix = 'http://learningenglish.voanews.com'
+                mp3_sub_url = temp_prefix + temp_html
+                
+                sub_response = requests.get(mp3_sub_url)
+                if sub_response.status_code != 200:
+                    print "MP3 Sub page: Not 200"
+                sub_html = sub_response.content
+                mp3_soup = BeautifulSoup(sub_html)
+                mp3list = mp3_soup.find('li',{'class':'downloadlinkstatic'})
+            except TypeError:
+                pass
+
+        if mp3list != None:   
+            mp3list = mp3list.findAll('a')
+          
+            # mp3list: Only works for the newest
+            # 0: MP3 - 128.0kb/s ~8.3MB
+            # 1: wav - 1.4Mb/s ~ 91.3MB
+            # 2: MP3 - 64.0kb/s ~4.1MB
+            
+            mp3_link = mp3list[0]
+            self.mp3_link = mp3_link['href']
+
+
         
         # We can continue to use the soup:     
         # get the title:        
@@ -143,10 +154,14 @@ class link_list:
         html = response.content        
         soup = BeautifulSoup(html)  
         column = soup.find('div',{'id':'sc2'})
-        self.url_list = column.findAll('a',{'class':' assignedIcon asIcoAudio'})
+        self.url_list = column.findAll('div',{'class':'archive_rowmm'})
+        
         #begin to scrapering:
         for item in self.url_list: 
-            scraper(self.get_code(item))
+            soup_url = item.find('a',{'class':" assignedIcon asIcoAudio"})
+            if soup_url == None:
+                soup_url = item.find('a')
+            scraper(self.get_code(soup_url))
             
 
     def get_code(self,soupinstance):
@@ -158,7 +173,7 @@ class link_list:
         
 
 if __name__ == "__main__":
-    test2 = link_list(2)
+    test2 = link_list(3)
     test2.get_urllist()
 
 
