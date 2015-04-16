@@ -94,6 +94,7 @@ class scraper:
         # get the date:
         date_temp = soup.find('p',{'class':'article_date'})
         date = date_temp.contents[0].strip()
+        date = re.search(r'\d+\/\d+\/\d+',date).group(0)
         ##change the format:
         self.date = datetime.datetime.strptime(date,'%m/%d/%Y').strftime('%y-%m-%d')
         
@@ -142,8 +143,8 @@ class link_list:
         html = response.content        
         soup = BeautifulSoup(html)  
         column = soup.find('div',{'id':'sc2'})
-        self.url_list = column.findAll('a',{'class':' assignedIcon asIcoAudio'})        
-        
+        self.url_list = column.findAll('a',{'class':' assignedIcon asIcoAudio'})
+        #begin to scrapering:
         for item in self.url_list: 
             scraper(self.get_code(item))
             
