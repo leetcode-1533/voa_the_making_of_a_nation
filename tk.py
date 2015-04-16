@@ -131,8 +131,8 @@ class scraper:
         
 class link_list:
 
-    def __init__(self):
-        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/2/979/979.html?tab=2'
+    def __init__(self,code):
+        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/{pagenumber}/979/979.html?tab=2'.format(pagenumber=str(code))
 
     def get_urllist(self):
         response = requests.get(self.list_url)
@@ -157,7 +157,7 @@ class link_list:
         
 
 if __name__ == "__main__":
-    test2 = link_list()
+    test2 = link_list(2)
     test2.get_urllist()
 
 
