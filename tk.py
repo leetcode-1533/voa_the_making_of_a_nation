@@ -17,15 +17,19 @@ import urllib2
 class scraper:
     
     def __init__(self,link):
-        destionation = '/tmp'
+        destionation = '/tmp/voa'            
+        prefix = 'http://learningenglish.voanews.com'
 
-        self.ori_link = link
+        self.ori_link = prefix + link
+        
+        print self.ori_link
+
         self.analyzer()
         
         #define the download path:
         self.loc = os.path.join(destionation,self.date)
         if not os.path.exists(self.loc):
-            os.mkdir(self.loc)
+            os.makedirs(self.loc)
         
         
         self.crawing()
@@ -38,7 +42,7 @@ class scraper:
         print_code = re.findall(r'\d+.html',self.ori_link)[0]
         print_patter = 'http://learningenglish.voanews.com/articleprintview/'  
         self.print_link = print_patter + print_code
-        
+                
         
         # get mp3 url:        
         response = requests.get(self.ori_link)
@@ -49,6 +53,10 @@ class scraper:
         soup = BeautifulSoup(html)      
         
         mp3list = soup.find('li',{'class':'downloadlink'})
+        
+        if mp3list == None:
+            mp3list = soup.find('li',{'class':'downloadlinkstatic'})
+        
         mp3list = mp3list.findAll('a',)
       
         # mp3list:
@@ -68,6 +76,7 @@ class scraper:
         date = date_temp.contents[0].strip()
         ##change the format:
         self.date = datetime.datetime.strptime(date,'%m/%d/%Y').strftime('%y-%m-%d')
+        print self.date
         
                   
     def txtsave(self):
@@ -104,7 +113,7 @@ class scraper:
 class link_list:
 
     def __init__(self):
-        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/2/979/979.html?tab=2'
+        self.list_url = 'http://learningenglish.voanews.com/archive/learningenglish-programs-radio-making-of-a-nation/1/979/979.html?tab=2'
 
     def get_urllist(self):
         response = requests.get(self.list_url)
@@ -112,19 +121,19 @@ class link_list:
         if response.status_code != 200:        
             print "Listing: Not 200"       
         html = response.content        
-        soup = BeautifulSoup(html)        
-        self.url_list = soup.findAll('a',{'class':' assignedIcon asIcoAudio'})        
+        soup = BeautifulSoup(html)  
+        column = soup.find('div',{'id':'sc2'})
+        self.url_list = column.findAll('a',{'class':' assignedIcon asIcoAudio'})        
         
-        for item in self.url_list:        
-            print self.get_code(item)
+        for item in self.url_list: 
+            scraper(self.get_code(item))
+            
 
     def get_code(self,soupinstance):
-        
         wholehtml_temp = soupinstance['href']
-        # print html     
-        html_temp = re.search(r'\d+.html',wholehtml_temp).group(0) 
-        html = re.sub(r'.html',"",html_temp)   
-        return html
+        # This it to get the html code, but right now it is of no use:
+        # html = re.search(r'\d+.html',wholehtml_temp).group(0) 
+        return wholehtml_temp
 
         
 
